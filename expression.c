@@ -49,14 +49,14 @@ int integer(char *str){
 Token scanner(char *str,char ch){
 	Token token;
 	//printf("ch=%c\n",ch);
+	while(ch== ' '){
+		ch=str[++pos];
+		//printf("%c\n",ch);
+	}
 	if(ch== '\n'){
 		token.type=EOF;
 		token.value=EOF;
 		return token;
-		//printf("%c\n",ch);
-	}
-	if(ch== ' '){
-		ch=str[++pos];
 		//printf("%c\n",ch);
 	}
 	if(ch>='0' && ch<='9'){
@@ -84,7 +84,7 @@ Token scanner(char *str,char ch){
 		token.value='/';
 		return token;
 	}
-	printf(RED"[Interpretation error]"RESET"Scan error!!");
+	printf(RED"[Interpretation error]"RESET"Scan error!! '%d' cannot be recognised as token!",ch);
 	//synerror();
 }
 
@@ -141,7 +141,7 @@ int parser(char *str){
 			op=current_token;//pos++;
 			//printf("%c\n",str[pos]);
 			current_token=scanner(str,str[pos]);pos++;
-			//printf("OP=%c Token=%c\n",op.value,current_token.value);
+			//printf("OP=%c Token=%d\n",op.value,current_token.value);
 			//printf("Result=%d\n",result);
 			result=vmachine(result,op,term(current_token));
 			current_token=scanner(str,str[pos]);pos++;
@@ -164,16 +164,16 @@ int parser(char *str){
 
 int main(){
 	char ch;
-	char string[10];
+	char string[100];
 	while(1){
 		pos=0;
-		printf(GREEN"PW>> "RESET);
+		printf(GREEN"Knudon>> "RESET);
 	//ch=getchar();
 	//printf("%c",ch);
 	//while(ch=getchar()!='\n')
 	//	printf("%c",ch);
 	//	scanf("%s",string);
-		fgets(string,10,stdin);
+		fgets(string,100,stdin);
 	//	printf("%s\n",string);
 		string[strlen(string)]=EOF;
 		printf("%d\n",parser(string));
