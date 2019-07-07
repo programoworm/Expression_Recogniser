@@ -26,15 +26,15 @@ void synerror(){
 
 
 void match(int current_token_type,int type){
-	if(current_token_type==type)
+	if(current_token_type==type){
+		pos++;
 		return;
+	}
 	printf(RED"[Interpretation error]"RESET"This is parse error!!");
+	//exit(0);
 	//synerror();
 }
-int term(Token current_token){
-	match(current_token.type,INT);
-	return current_token.value;
-}
+
 int integer(char *str){
 	int i=0;	
 	char num[10];
@@ -46,6 +46,7 @@ int integer(char *str){
 	//printf("%s\n",num);
 	return atoi(num);
 }
+
 Token scanner(char *str,char ch){
 	Token token;
 	//printf("ch=%c\n",ch);
@@ -53,7 +54,7 @@ Token scanner(char *str,char ch){
 		ch=str[++pos];
 		//printf("%c\n",ch);
 	}
-	if(ch== '\n'){
+	if(ch== '\n'||ch==EOF){
 		token.type=EOF;
 		token.value=EOF;
 		return token;
@@ -85,6 +86,7 @@ Token scanner(char *str,char ch){
 		return token;
 	}
 	printf(RED"[Interpretation error]"RESET"Scan error!! '%d' cannot be recognised as token!",ch);
+	//exit(0);
 	//synerror();
 }
 
@@ -99,11 +101,11 @@ int vmachine(int left,Token op, int right){
 		return left-right;
 }
 
-int parser(char *str){
+/*int parser(char *str){
 	int result;
 	Token current_token,left,op,right;
 	
-	/*current_token=scanner(str,str[pos]);
+	current_token=scanner(str,str[pos]);
 	pos++;
 	//printf("%d\n",current_token.value);
 	left=current_token;
@@ -127,7 +129,7 @@ int parser(char *str){
 	current_token=scanner(str,str[pos]);
 	pos++;
 	right=current_token;
-	match(right.type,INT);*/
+	match(right.type,INT);
 	current_token=scanner(str,str[pos]);pos++;
 	//pos++;
 	result=term(current_token);
@@ -149,8 +151,46 @@ int parser(char *str){
 	}
 	return result;
 	//return vmachine(left,op,right);
+}*/
+
+int factor(Token current_token){
+	match(current_token.type,INT);
+	return current_token.value;
 }
 
+int term(char *str,Token current_token){
+	int result;
+	Token op;
+	result=factor(current_token);
+	current_token=scanner(str,str[pos]);
+	while(str[pos]!=EOF && str[pos]!='\n' && (current_token.type==MULT || current_token.type==DIV)){
+		op=current_token;pos++;
+		current_token=scanner(str,str[pos]);
+		result=vmachine(result,op,factor(current_token));
+		current_token=scanner(str,str[pos]);
+	}
+	return result;
+}
+
+int expr(char *str,Token current_token){
+	Token op; int result;
+	result=term(str,current_token);
+	current_token=scanner(str,str[pos]);
+	while(str[pos]!=EOF && str[pos]!='\n' && (current_token.type==SUM || current_token.type==SUB)){
+		op=current_token;pos++;
+		current_token=scanner(str,str[pos]);
+		result=vmachine(result,op,term(str,current_token));
+		current_token=scanner(str,str[pos]);
+	}
+	return result;
+}
+
+int parser(char *str){
+	int result;
+	Token current_token=scanner(str,str[pos]);
+	result=expr(str,current_token);
+	return result;
+}
 /*int next_token(char *str){
 	//char ch;
 	int pos=0;
