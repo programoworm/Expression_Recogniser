@@ -3,7 +3,7 @@
 #include<string.h>
 #include<stdlib.h>
 
-#define NONE -1
+//#define NONE -1
 
 enum Reserved {INT=10,SUM,SUB,MULT,DIV,LPAREN,RPAREN};
 
@@ -14,7 +14,7 @@ typedef struct token{
 
 int pos=0;
 
-void none(Token token){
+/*void none(Token token){
 	token.type=NONE;
 	token.value=NONE;
 }
@@ -22,7 +22,7 @@ void none(Token token){
 void synerror(){
 	printf(RED"[info]"RESET"Syntax/Semantic Error\n");
 	exit(0);
-}
+}*/
 
 
 void match(int current_token_type,int type){
@@ -111,60 +111,18 @@ int vmachine(int left,Token op, int right){
 		return left-right;
 }
 
-/*int parser(char *str){
-	int result;
-	Token current_token,left,op,right;
-	
-	current_token=scanner(str,str[pos]);
-	pos++;
-	//printf("%d\n",current_token.value);
-	left=current_token;
-	match(left.type,INT);
-	
-	current_token=scanner(str,str[pos]);
-	pos++;
-	//printf("%c\n",current_token.value);
-	op=current_token;
-	switch(op.type){
-		case SUM: match(op.type,SUM);
-				break;
-		case SUB: match(op.type,SUB);
-				break;
-		case MULT: match(op.type,MULT);
-				break;
-		case DIV: match(op.type,DIV);
-				break;
-	}
 
-	current_token=scanner(str,str[pos]);
-	pos++;
-	right=current_token;
-	match(right.type,INT);
-	current_token=scanner(str,str[pos]);pos++;
-	//pos++;
-	result=term(current_token);
-	//printf("%c\n",str[pos]);
-	//if(str[pos]=='\n')
-	//	printf("HI\n");
-	if(str[pos]!=EOF && str[pos]!='\n'){
-		//printf("Here is me!\n");
-		current_token=scanner(str,str[pos]);pos++;
-		while(str[pos-1]!=EOF && str[pos-1]!='\n' && (current_token.type==SUM || current_token.type==SUB || current_token.type==MULT || current_token.type==DIV)){
-			op=current_token;//pos++;
-			//printf("%c\n",str[pos]);
-			current_token=scanner(str,str[pos]);pos++;
-			//printf("OP=%c Token=%d\n",op.value,current_token.value);
-			//printf("Result=%d\n",result);
-			result=vmachine(result,op,term(current_token));
-			current_token=scanner(str,str[pos]);pos++;
-		}
-	}
-	return result;
-	//return vmachine(left,op,right);
-}*/
 int expr(char *str,Token current_token);
-
 int factor(char *str,Token current_token){
+	Token op;
+	if(current_token.type==SUM|current_token.type==SUB){
+		pos++;
+		op=current_token;
+		current_token=scanner(str,str[pos]);
+		int result=vmachine(0,op,factor(str,current_token));
+		//printf("result=%d op=%d c_token=%d\n",result,op.type,current_token.value);
+		return result;
+	}
 	if(current_token.type==LPAREN){
 		pos++;
 		current_token=scanner(str,str[pos]);
@@ -211,15 +169,6 @@ int parser(char *str){
 	result=expr(str,current_token);
 	return result;
 }
-/*int next_token(char *str){
-	//char ch;
-	int pos=0;
-	Token current_token;
-	while(str[pos]!=EOF)//current
-		scanner(str[pos],token,pos++);	
-	token[pos]=EOF
-	return expr(token);
-}*/
 
 
 int main(){
@@ -228,18 +177,9 @@ int main(){
 	while(1){
 		pos=0;
 		printf(GREEN"Knudon>> "RESET);
-	//ch=getchar();
-	//printf("%c",ch);
-	//while(ch=getchar()!='\n')
-	//	printf("%c",ch);
-	//	scanf("%s",string);
 		fgets(string,100,stdin);
-	//	printf("%s\n",string);
 		string[strlen(string)]=EOF;
 		printf("%d\n",parser(string));
 	}
-	//printf("%d",string[3]);
-	//scanf("%c",&ch);
-	//printf("%d\n",ch-48);
 	return 0;
 }
