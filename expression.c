@@ -1,5 +1,5 @@
 #include<stdio.h>
-#include<colors.h>
+#include"colors.h"
 #include<string.h>
 #include<stdlib.h>
 
