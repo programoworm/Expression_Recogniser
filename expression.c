@@ -5,7 +5,7 @@
 
 #define NONE -1
 
-enum Reserved {INT=10,SUM,SUB,MULT,DIV};
+enum Reserved {INT=10,SUM,SUB,MULT,DIV,LPAREN,RPAREN};
 
 typedef struct token{
 	int type;
@@ -59,6 +59,16 @@ Token scanner(char *str,char ch){
 		token.value=EOF;
 		return token;
 		//printf("%c\n",ch);
+	}
+	if(ch=='('){
+		token.type=LPAREN;
+		token.value='(';
+		return token;
+	}
+	if(ch==')'){
+		token.type=RPAREN;
+		token.value=')';
+		return token;
 	}
 	if(ch>='0' && ch<='9'){
 		token.type=INT;
@@ -152,8 +162,18 @@ int vmachine(int left,Token op, int right){
 	return result;
 	//return vmachine(left,op,right);
 }*/
+int expr(char *str,Token current_token);
 
-int factor(Token current_token){
+int factor(char *str,Token current_token){
+	if(current_token.type==LPAREN){
+		pos++;
+		current_token=scanner(str,str[pos]);
+		int result=expr(str,current_token);
+		current_token=scanner(str,str[pos]);
+		//printf("type=%d\n",current_token.type);
+		match(current_token.type,RPAREN);
+		return result;
+	}
 	match(current_token.type,INT);
 	return current_token.value;
 }
@@ -161,12 +181,12 @@ int factor(Token current_token){
 int term(char *str,Token current_token){
 	int result;
 	Token op;
-	result=factor(current_token);
+	result=factor(str,current_token);
 	current_token=scanner(str,str[pos]);
 	while(str[pos]!=EOF && str[pos]!='\n' && (current_token.type==MULT || current_token.type==DIV)){
 		op=current_token;pos++;
 		current_token=scanner(str,str[pos]);
-		result=vmachine(result,op,factor(current_token));
+		result=vmachine(result,op,factor(str,current_token));
 		current_token=scanner(str,str[pos]);
 	}
 	return result;
